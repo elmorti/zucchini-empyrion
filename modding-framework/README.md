@@ -1,5 +1,3 @@
-![Build EmpyrionModdingFramework](https://github.com/Zucchini-Universe/empyrion-modding-framework/workflows/Build%20EmpyrionModdingFramework/badge.svg)
-
 # Zucchini Empyrion Modding Framework
 
 A small and simple framework to help server owners create Empyrion GS server side mods to improve the gameplay.
