@@ -1,6 +1,0 @@
-Name: Zucchini Skeleton Mod
-Description: To be used as a template
-Author: Zucchini Universe
-Version: 0.1
-Website: https://www.zucchiniunivere.org
-ModTargets: Client, Dedi, PfServer # None, Dedi, PfServer, Client
