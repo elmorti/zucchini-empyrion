@@ -156,7 +156,7 @@ We recommend that you install ILMerge and any of the most common MSBuild Tasks f
 
 ### Examples
 
-We have written a simple mod that uses the framework and show how to use it, check out the [Skeleton](https://github.com/elmorti/TBD).
+We have written a simple mod that uses the framework and show how to use it, check out the [Skeleton](https://github.com/elmorti/zucchini-empyrion/tree/main/zucchini-skeleton).
 
 ### Contributions
 
