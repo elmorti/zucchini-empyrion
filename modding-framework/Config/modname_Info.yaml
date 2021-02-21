@@ -1,0 +1,6 @@
+Name: ModName
+Description: Zucchini Mod
+Author: Zucchini Universe
+Version: 0.9
+Website: https://www.zucchiniuniverse.org
+ModTargets: Dedi, Client, PfServer # None, Dedi, PfServer, Client

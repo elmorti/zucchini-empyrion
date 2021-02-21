@@ -1,0 +1,3 @@
+[submodule "Dependencies/empyrion-eleon"]
+	path = Dependencies/empyrion-eleon
+	url = https://github.com/Zucchini-Universe/empyrion-eleon.git

@@ -1,0 +1,6 @@
+---
+ModBaseConfig:
+  LogPrefix: "-- Zucchini --"
+  DedicatedYaml: "dedicated.yaml"
+DedicatedConfig:
+  ConfigFileName: "configuration.yaml"

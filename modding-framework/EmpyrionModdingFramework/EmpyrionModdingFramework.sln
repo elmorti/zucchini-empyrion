@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30503.244
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmpyrionModdingFramework", "EmpyrionModdingFramework.csproj", "{98064548-5ECA-4D2C-97CB-78224487B6E6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{37CBD6FE-4081-4E70-B4BB-8747BA2047D8}"
+	ProjectSection(SolutionItems) = preProject
+		..\.gitignore = ..\.gitignore
+		..\Config\Config.yaml = ..\Config\Config.yaml
+		..\LICENSE = ..\LICENSE
+		..\Scripts\PrepareRelease.ps1 = ..\Scripts\PrepareRelease.ps1
+		..\README.md = ..\README.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{98064548-5ECA-4D2C-97CB-78224487B6E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98064548-5ECA-4D2C-97CB-78224487B6E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {84092733-5380-4443-86B8-38267B9CF35F}
+	EndGlobalSection
+EndGlobal
