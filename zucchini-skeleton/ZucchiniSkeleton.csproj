@@ -34,15 +34,16 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="EmpyrionModdingFramework">
-      <HintPath>..\..\empyrion-modding-framework\EmpyrionModdingFramework\bin\Debug\ILMerge\EmpyrionModdingFramework.dll</HintPath>
+    <Reference Include="EmpyrionModdingFramework, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\modding-framework\EmpyrionModdingFramework\bin\Debug\ILMerge\EmpyrionModdingFramework.dll</HintPath>
     </Reference>
     <Reference Include="Mif">
-      <HintPath>..\..\empyrion-modding-framework\Dependencies\empyrion-eleon\Mif.dll</HintPath>
+      <HintPath>..\..\..\repositories_wip\zucchini-empyrion\eleon\Mif.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="ModApi">
-      <HintPath>..\..\empyrion-modding-framework\Dependencies\empyrion-eleon\ModApi.dll</HintPath>
+      <HintPath>..\..\..\repositories_wip\zucchini-empyrion\eleon\ModApi.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />

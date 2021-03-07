@@ -17,22 +17,40 @@ namespace ZucchiniSkeleton
 
     protected override void Initialize()
     {
-      ModAPI.Application.GameEntered += Application_GameEntered;
+      if (LegacyAPI == null)
+      {
+        ModAPI.Application.GameEntered += Application_GameEntered;
+      } else
+      {
+        Game_EventRaised += PlayerConnected_Game_EventRaised;
+      }
+
 
       CommandManager.CommandList.Add(new ChatCommand($"sping", (I) => ServerPing(I)));
     }
 
+    // This event only triggers when running in Dedi mode
+    private void PlayerConnected_Game_EventRaised(CmdId eventId, ushort seqNr, object data)
+    {
+      if (eventId == CmdId.Event_Player_Connected)
+      {
+        PlayerInfo player = (PlayerInfo)data;
+        Log($"Player {player.playerName} has logged in.");
+      }
+    }
+
+    // This event only exists in Client mode
     private void Application_GameEntered(bool hasEntered)
     {
       ShowGamePaths();
 
       configFilePath = ModAPI.Application.GetPathFor(AppFolder.SaveGame) + @"\Mods\" + 
-       ModName + @"\" + ConfigManager.Config.DedicatedConfig.ConfigFileName;
+       ModName + @"\" + FrameworkConfig.DedicatedConfig.ConfigFileName;
       try
       {
         using (StreamReader reader = File.OpenText(configFilePath))
         {
-          ConfigManager.LoadConfiguration<Config>(reader, out Configuration);
+          Configuration = ConfigManager.LoadConfiguration<Config>(reader);
         }
       }
       catch (Exception error)
