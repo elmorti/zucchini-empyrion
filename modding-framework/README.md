@@ -1,5 +1,3 @@
-![Build EmpyrionModdingFramework](https://github.com/Zucchini-Universe/empyrion-modding-framework/workflows/Build%20EmpyrionModdingFramework/badge.svg)
-
 # Zucchini Empyrion Modding Framework
 
 A small and simple framework to help server owners create Empyrion GS server side mods to improve the gameplay.
@@ -158,7 +156,7 @@ We recommend that you install ILMerge and any of the most common MSBuild Tasks f
 
 ### Examples
 
-We have written a simple mod that uses the framework and show how to use it, check out the [Skeleton](https://github.com/elmorti/TBD).
+We have written a simple mod that uses the framework and show how to use it, check out the [Skeleton](https://github.com/elmorti/zucchini-empyrion/tree/main/zucchini-skeleton).
 
 ### Contributions
 
