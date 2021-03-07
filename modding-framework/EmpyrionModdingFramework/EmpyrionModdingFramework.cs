@@ -13,9 +13,11 @@ namespace EmpyrionModdingFramework
 
     protected string ModName { get; private set; }
 
-    protected ConfigManager ConfigManager;
-    protected CommandManager CommandManager { get; set; }
-    protected RequestManager RequestManager;
+    protected ConfigManager ConfigManager { get; private set; }
+    protected CommandManager CommandManager { get; private set; }
+    protected RequestManager RequestManager { get; private set; }
+    protected FrameworkConfig FrameworkConfig { get; private set; }
+    protected Helpers Helpers { get; private set; }
 
     protected delegate void Game_EventHandler(CmdId eventId, ushort seqNr, object data);
     protected event Game_EventHandler Game_EventRaised;
@@ -34,13 +36,15 @@ namespace EmpyrionModdingFramework
       ModName = Assembly.GetExecutingAssembly().GetName().Name;
       ConfigManager = new ConfigManager();
       CommandManager = new CommandManager(ModAPI);
+      Helpers = new Helpers(ModAPI, RequestManager);
+      FrameworkConfig = new FrameworkConfig();
 
       ModAPI.Application.ChatMessageSent += CommandManager.ProcessChatMessage;
       try
       {
         using (StreamReader reader = File.OpenText(ModAPI.Application.GetPathFor(AppFolder.Mod) + @"\" + $"{ModName}" + @"\config.yaml"))
         {
-          ConfigManager.LoadConfiguration(reader, out ConfigManager.Config);
+          FrameworkConfig = ConfigManager.LoadConfiguration<FrameworkConfig>(reader);
         }
       }
       catch (Exception error)
@@ -55,8 +59,8 @@ namespace EmpyrionModdingFramework
       }
       catch (Exception error)
       {
-        Log($"initialization error.");
-        Log($"{error.Message}");
+        Log($"initialization exception.");
+        Log($"{error}");
       }
       Log($"ModAPI initialization complete!");
       if (LegacyAPI != null)
@@ -95,6 +99,21 @@ namespace EmpyrionModdingFramework
       catch (Exception error)
       {
         Log($"Game_Event Exception: EventId: {eventId} SeqNr: {seqNr} Data: {data?.ToString()} Error: {error}");
+      }
+
+      switch (eventId)
+      {
+        case CmdId.Event_Ok:
+          Log($"Game_Event OK for SeqNr: {seqNr} Data: {data?.ToString()}");
+          break;
+        case CmdId.Event_Error:
+          ErrorInfo err = (ErrorInfo)data;
+          Log($"Game_Event ERROR for SeqNr: {seqNr}");
+          Log($"Game_Event ERROR  {err.errorType}");
+          break;
+        default:
+          Log($"Game_Event {eventId} SeqNr: {seqNr} Data: {data?.ToString()}");
+          break;
       }
 
       Game_EventRaised?.Invoke(eventId, seqNr, data);

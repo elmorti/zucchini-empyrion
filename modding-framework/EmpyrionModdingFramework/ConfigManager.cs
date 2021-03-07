@@ -6,10 +6,9 @@ namespace EmpyrionModdingFramework
 {
   public class ConfigManager
   {
-    public ConfigClass Config = new ConfigClass();
     private readonly object documentLock = new object();
 
-    public void LoadConfiguration<T>(StreamReader document, out T refConfig)
+    public T LoadConfiguration<T>(StreamReader document)
     {
       try
       {
@@ -17,7 +16,7 @@ namespace EmpyrionModdingFramework
               .IgnoreUnmatchedProperties()
               .Build();
 
-          refConfig = deserializer.Deserialize<T>(document);
+          return deserializer.Deserialize<T>(document);
       }
       catch
       {
@@ -39,24 +38,6 @@ namespace EmpyrionModdingFramework
       {
           throw;
       }
-    }
-
-    public class ConfigClass
-    {
-      public class ModBaseConfigClass
-      {
-        public string LogPrefix { get; set; }
-        public string DedicatedYaml { get; set; }
-      }
-
-      public class DedicatedConfigClass
-      {
-        public string ConfigFileName { get; set; }
-        public string SaveGameName { get; set; }
-      }
-
-      public ModBaseConfigClass ModBaseConfig { get; set; }
-      public DedicatedConfigClass DedicatedConfig { get; set; }
     }
   }
 }

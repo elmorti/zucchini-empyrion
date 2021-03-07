@@ -44,17 +44,18 @@ namespace EmpyrionModdingFramework
       }
     }
 
-    public void ProcessChatCommand(MessageData data)
+    public async void ProcessChatCommand(MessageData data)
     {
       ChatCommand chatCommand = CommandList.FirstOrDefault(C => data.Text.StartsWith("@" + C.cmdText));
       if ((chatCommand == null) || (chatCommand.cmdHandler == null))
       {
-        modAPI.Log($"can't find a handler for {data.Text}");
         return;
       }
 
+      modAPI.Log($"ChatCommand found is {chatCommand.cmdText}");
+      modAPI.Log($"ChatCommand has handler {chatCommand.cmdHandler}");
       modAPI.Log($"invoking handler for {data.Text}");
-      chatCommand.cmdHandler.Invoke(data);
+      await chatCommand.cmdHandler(data);
     }
   }
 
