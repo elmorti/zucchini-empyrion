@@ -40,11 +40,12 @@ namespace EmpyrionModdingFramework
       FrameworkConfig = new FrameworkConfig();
 
       ModAPI.Application.ChatMessageSent += CommandManager.ProcessChatMessage;
+
       try
       {
-        using (StreamReader reader = File.OpenText(ModAPI.Application.GetPathFor(AppFolder.Mod) + @"\" + $"{ModName}" + @"\config.yaml"))
+        using (StreamReader reader = File.OpenText(ModAPI.Application.GetPathFor(AppFolder.Mod) + @"\" + $"{ModName}" + @"\" + $"{ModName}_Info.yaml"))
         {
-          FrameworkConfig = ConfigManager.LoadConfiguration<FrameworkConfig>(reader);
+          FrameworkConfig = ConfigManager.DeserializeYaml<FrameworkConfig>(reader);
         }
       }
       catch (Exception error)
