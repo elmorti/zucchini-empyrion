@@ -8,7 +8,7 @@ namespace EmpyrionModdingFramework
   {
     private readonly object documentLock = new object();
 
-    public T LoadConfiguration<T>(StreamReader document)
+    public T DeserializeYaml<T>(StreamReader document)
     {
       try
       {
@@ -24,7 +24,7 @@ namespace EmpyrionModdingFramework
       }
     }
 
-    public void SaveConfiguration<T>(StreamWriter document, T config)
+    public void SerializeYaml<T>(StreamWriter document, T config)
     {
       try
       {
