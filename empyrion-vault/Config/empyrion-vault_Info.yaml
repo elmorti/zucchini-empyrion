@@ -1,0 +1,8 @@
+Name: Vault
+Description: Vault
+Author: Zucchini Universe
+Version: 0.9
+Website: https://www.zucchiniuniverse.org
+ModTargets: Dedi
+LogPrefix: "-- Vault --"
+ConfigFileName: "configuration.yaml"

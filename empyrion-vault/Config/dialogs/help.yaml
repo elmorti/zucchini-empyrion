@@ -1,0 +1,49 @@
+---
+TitleText: "<align=center><size=75%><color=#00cc66><b><u>Zucchini Vault</u></b></color></size></align>"
+BodyText: >
+
+  <size=75%>
+  <align=center><color=#009933><b>Welcome {player}!</b>
+
+
+  <align=left>
+  <indent=20>
+  <color=#0099ff>
+
+  The Zucchini Vault system allows you to safely store loot in our secret Swiss bunkers and guarded under the vigilance 24/7 by Zucchi.
+  
+
+  <align=center>
+  <color=#bb0000>
+  <b>Use it wisely as storage space is limited and expensive!</b>
+  </color>
+
+
+  <align=left>
+  <b><u>Commands available:</b></u>
+  
+  <indent=50>
+  <color=#cca300>
+
+  - @vault_help: Opens this help dialog.
+
+  - @vault_help: Opens this help dialog.
+
+  - @vault_help: Opens this help dialog.
+
+  - @vault_help: Opens this help dialog.
+
+
+
+
+
+
+
+  <align=center><color=#00cc66><b>Zucchini Universe (c) 2021</b>
+  </size>
+CloseOnLinkClick: true
+ButtonTexts:
+  - "Close"
+  - "List"
+  - "Create"
+ButtonIdxForEsc: 0
