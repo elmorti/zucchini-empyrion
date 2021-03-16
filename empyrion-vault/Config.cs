@@ -1,4 +1,4 @@
-﻿namespace empyrion_vault
+﻿namespace Empyrion_Vault
 {
   public class Config
   {

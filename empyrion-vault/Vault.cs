@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Eleon.Modding;
 
-namespace empyrion_vault
+namespace Empyrion_Vault
 {
   class Vault
   {

@@ -10,23 +10,18 @@ using Eleon.Modding;
 
 using EmpyrionModdingFramework;
 
-namespace empyrion_vault
+namespace Empyrion_Vault
 {
   public class Main : EmpyrionModdingFrameworkBase
   {
     public Config Configuration;
     public string GameModConfigPath;
 
-    // Let's store an in memory copy to avoid too much concurrent access to the files.
-    public ConcurrentDictionary<int, List<ItemStack>> Vaults;
-
     protected override void Initialize()
     {
-      Vaults = new ConcurrentDictionary<int, List<ItemStack>>();
-
-      CommandManager.CommandList.Add(new ChatCommand($"vault_help", (I) => Vault_Help(I)));
-      CommandManager.CommandList.Add(new ChatCommand($"vault_recycle", (I) => Vault_Recycle(I)));
-      CommandManager.CommandList.Add(new ChatCommand($"vault_struct", (I) => Vault_Structure(I)));
+      CommandManager.CommandList.Add(new ChatCommand($"vault_help", (I) => VaultHelp(I)));
+      CommandManager.CommandList.Add(new ChatCommand($"vault_recycle", (I) => VaultRecycle(I)));
+      CommandManager.CommandList.Add(new ChatCommand($"vault_struct", (I) => VaultStructure(I)));
 
       LoadConfiguration();
     }
@@ -69,14 +64,13 @@ namespace empyrion_vault
       }
     }
 
-    private async Task Vault_Help(MessageData data)
+    private async Task _LoadFileFromYaml(string Path)
     {
-      DialogConfig dialogConfig = new DialogConfig();
       try
       {
-        using (StreamReader reader = File.OpenText(ModAPI.Application.GetPathFor(AppFolder.Mod) + @"\" + $"{ModName}" + @"\dialogs\help.yaml"))
+        using (StreamReader reader = File.OpenText(path)
         {
-          dialogConfig = ConfigManager.DeserializeYaml<DialogConfig>(reader);
+          return ConfigManager.DeserializeYaml<T>(reader);
         }
       }
       catch (Exception error)
@@ -84,33 +78,62 @@ namespace empyrion_vault
         Log($"error opening the dialog config");
         Log($"{error.Message}");
       }
+    }
+
+    /// <summary>
+    ///  VaultHelpCommadn
+    /// </summary>
+    /// <param name="data"></param>
+    /// <returns></returns>
+
+    //
+    // VAULT HELP
+    // 
+
+    // Delegate for CommandManager
+    private async Task VaultHelpCommand(MessageData data)
+    {
+      Log($"VaultHelpCommand called by {data.SenderEntityId} with: {data.Text} ");
+      await VaultHelpDialog(data);
+    }
+
+    private async Task VaultHelpDialog(MessageData data)
+    {
+      DialogConfig dialogConfig = _LoadFileFromYaml("adasd");
       dialogConfig.BodyText = dialogConfig.BodyText.Replace("%%PLAYER%%", data.SenderEntityId.ToString());
-      //await Helpers.ShowDialog(data, dlgConfig);
       await Task.Factory.StartNew(() =>
-        ModAPI.Application.ShowDialogBox(data.SenderEntityId, dialogConfig, Vault_Help_Handler, 0)
+        ModAPI.Application.ShowDialogBox(data.SenderEntityId, dialogConfig, VaultHelpDialogHandler, 0)
       );
     }
 
-    private async void Vault_Help_Handler(int buttonIdx, string linkId, string inputContent, int playerId, int customValue)
+    private async void VaultHelpDialogHandler(int buttonIdx, string linkId, string inputContent, int playerId, int customValue)
     {
       switch (linkId)
       {
         case "vault_new":
-          await Vault_Add(playerId);
+          await VaultNew(playerId);
           return;
         case "vault_list":
           Log($"Player {playerId} clicked {linkId}");
-          await Vault_List(playerId);
+          await VaultList(playerId);
           return;
         default:
           break;
       }
     }
 
-    private async void Vault_Open_Handler(int buttonIdx, string linkId, string inputContent, int playerId, int customValue)
+    //
+    // VAULT OPEN
+    // 
+
+    private async void VaultOpenHandler(int buttonIdx, string linkId, string inputContent, int playerId, int customValue)
     {
-      await Vault_Open(playerId, linkId);
+      await VaultOpen(playerId, linkId);
     }
+
+    //
+    // VAULT LIST
+    // 
 
     private async Task Vault_List(int playerId)
     {
@@ -151,17 +174,11 @@ namespace empyrion_vault
       }
     }
 
-    private async void Vault_New_Handler(int buttonIdx, string linkId, string inputContent, int playerId, int customValue)
-    {
-      if (inputContent == "")
-      {
-        Log($"No vault name provided");
-        return;
-      }
-      await Vault_Create(playerId, inputContent);
-    }
+    //
+    // VAULT NEW
+    // 
 
-    private async Task Vault_Add(int playerId)
+    private async Task VaultNewDialog(int playerId)
     {
       PlayerInfo playerInfo = await Helpers.GetPlayerInfo(playerId);
       DialogConfig dialogConfig = new DialogConfig()
@@ -180,12 +197,22 @@ namespace empyrion_vault
 
       //dialogConfig.BodyText = "Enter vault name";
       await Task.Factory.StartNew(() =>
-        ModAPI.Application.ShowDialogBox(playerId, dialogConfig, Vault_New_Handler, 0)
+        ModAPI.Application.ShowDialogBox(playerId, dialogConfig, VaultNewDialogHandler, 0)
       );
       Log($"ASDASDASDASDASDSADA");
     }
 
-    private async Task Vault_Create(int playerId, string vaultName)
+    private async void VaultNewDialogHandler(int buttonIdx, string linkId, string inputContent, int playerId, int customValue)
+    {
+      if (inputContent == "")
+      {
+        Log($"No vault name provided");
+        return;
+      }
+      await VaultNew(playerId, inputContent);
+    }
+
+    private async Task VaultNew(int playerId, string vaultName)
     {
       PlayerInfo playerInfo = await Helpers.GetPlayerInfo(playerId);
       Vault test = new Vault()
@@ -195,7 +222,8 @@ namespace empyrion_vault
         Items = new List<ItemStack>()
       };
 
-      if (File.Exists(GameModConfigPath + @"\Players\" + playerInfo.steamId + @"\" + vaultName + @".yaml")) {
+      if (File.Exists(GameModConfigPath + @"\Players\" + playerInfo.steamId + @"\" + vaultName + @".yaml"))
+      {
         await RequestManager.SendGameRequest(CmdId.Request_InGameMessage_SinglePlayer, new IdMsgPrio()
         {
           msg = string.Format("There is already a vault with that name."),
@@ -205,7 +233,7 @@ namespace empyrion_vault
         });
         return;
       }
-      
+
       using (StreamWriter writer = File.CreateText(GameModConfigPath + @"\Players\" + playerInfo.steamId + @"\" + test.Name + @".yaml"))
       {
         ConfigManager.SerializeYaml(writer, test);
@@ -259,51 +287,9 @@ namespace empyrion_vault
       Log($"Safely leaving this task");
     }
 
-    private async Task Vault_Open(int playerId, string vaultName)
-    {
-      PlayerInfo playerInfo = await Helpers.GetPlayerInfo(playerId);
-      Vault test = new Vault();
-
-      if (!File.Exists(GameModConfigPath + @"\Players\" + playerInfo.steamId + @"\" + vaultName + @".yaml"))
-      {
-        await RequestManager.SendGameRequest(CmdId.Request_InGameMessage_SinglePlayer, new IdMsgPrio()
-        {
-          msg = string.Format("Cannot find vault, please create one."),
-          id = playerId,
-          prio = 0,
-          time = 1
-        });
-        return;
-      }
-
-      using (StreamReader reader = File.OpenText(GameModConfigPath + @"\Players\" + playerInfo.steamId + @"\" + vaultName + @".yaml"))
-      {
-        test = ConfigManager.DeserializeYaml<Vault>(reader);
-      }
-           
-      ItemExchangeInfo vault_exchange = new ItemExchangeInfo()
-      {
-        title = "Vault",
-        desc = $"Vault Name: {test.Name}",
-        buttonText = "Close",
-        items = test.Items.ToArray(),
-        id = playerId
-      };
-
-      ///
-      //// IF PLAYER DISCONNECTS HERE ITEMS CAN BE DUPLICATED!
-      /// because test.Items will not get updated
-      vault_exchange = (ItemExchangeInfo)await RequestManager.SendGameRequest(CmdId.Request_Player_ItemExchange, vault_exchange);
-
-      test.Items = new List<ItemStack>(vault_exchange.items);
-
-      using (StreamWriter writer = new StreamWriter(GameModConfigPath + @"\Players\" + playerInfo.steamId + @"\" + test.Name + @".yaml"))
-      {
-        ConfigManager.SerializeYaml(writer, test);
-      }
-
-      Log($"Vault SAVED!");
-    }
+    //
+    // VAULT RENAME
+    //
 
     private async Task Vault_Rename(MessageData data)
     {
