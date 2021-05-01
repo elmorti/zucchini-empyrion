@@ -16,7 +16,6 @@ namespace EmpyrionModdingFramework
     protected ConfigManager ConfigManager { get; private set; }
     protected CommandManager CommandManager { get; private set; }
     protected RequestManager RequestManager { get; private set; }
-    protected FrameworkConfig FrameworkConfig { get; private set; }
     protected Helpers Helpers { get; private set; }
 
     protected delegate void Game_EventHandler(CmdId eventId, ushort seqNr, object data);
@@ -34,25 +33,13 @@ namespace EmpyrionModdingFramework
     {
       ModAPI = modApi;
       ModName = Assembly.GetExecutingAssembly().GetName().Name;
-      ConfigManager = new ConfigManager();
+      ConfigManager = new ConfigManager(
+        ModAPI.Application.GetPathFor(AppFolder.Mod) + @"\" + $"{ModName}" + @"\" + $"{ModName}_Info.yaml",
+        ModAPI.Application.GetPathFor(AppFolder.SaveGame) + @"\Mods\" + $"{ModName}");
       CommandManager = new CommandManager(ModAPI);
       Helpers = new Helpers(ModAPI, RequestManager);
-      FrameworkConfig = new FrameworkConfig();
 
       ModAPI.Application.ChatMessageSent += CommandManager.ProcessChatMessage;
-
-      try
-      {
-        using (StreamReader reader = File.OpenText(ModAPI.Application.GetPathFor(AppFolder.Mod) + @"\" + $"{ModName}" + @"\" + $"{ModName}_Info.yaml"))
-        {
-          FrameworkConfig = ConfigManager.DeserializeYaml<FrameworkConfig>(reader);
-        }
-      }
-      catch (Exception error)
-      {
-        Log($"error trying to load the main config file.");
-        Log($"{error.Message}");
-      }
 
       try
       {

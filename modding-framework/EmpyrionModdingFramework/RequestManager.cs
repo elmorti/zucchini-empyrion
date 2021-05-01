@@ -22,9 +22,17 @@ namespace EmpyrionModdingFramework
 
     public async Task<object> SendGameRequest(CmdId cmdID, object data)
     {
+      if (cmdID == CmdId.Request_InGameMessage_SinglePlayer)
+      {
+        modAPI.Game_Request(cmdID, 1024, data);
+        return Task.CompletedTask;
+      }
+
       TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
+      //CancellationTokenSource ct = new CancellationTokenSource(10000); // This to be investigated later for itemExchange!
+      //ct.Token.Register(() => tcs.SetResult(data));
       ushort seqNr = AddTaskCompletionSource(tcs);
-      modAPI.Console_Write($"TaskCompletionSource created for {cmdID} with seqNr: {seqNr}");
+      modAPI.Console_Write($"TaskCompletionSource task ID {tcs.Task.Id} created for {cmdID} with seqNr: {seqNr}");
       modAPI.Game_Request(cmdID, seqNr, data);
       return await tcs.Task;
     }
