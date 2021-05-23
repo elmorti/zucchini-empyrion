@@ -12,17 +12,18 @@ namespace Empyrion_Vault
 {
   public class Main : EmpyrionModdingFrameworkBase
   {
-    private bool debug;
+    private bool Debug { get; set; }
+    private string PlayerVaultPath { get; set; }
+    private string FactionVaultPath { get; set; }
 
     protected override void Initialize()
     {
-      debug = true;
+      Debug = true;
+      PlayerVaultPath = ModAPI.Application.GetPathFor(AppFolder.SaveGame) + @"\Mods\" + $"{ModName}" + @"\Players\";
+      FactionVaultPath = ModAPI.Application.GetPathFor(AppFolder.SaveGame) + @"\Mods\" + $"{ModName}" + @"\Factions\";
 
-      CommandManager.CommandList.Add(new ChatCommand($"vault_help", (I) => VaultHelpCommand(I)));
-      CommandManager.CommandList.Add(new ChatCommand($"vault_new", (I) => VaultNewCommand(I)));
-      CommandManager.CommandList.Add(new ChatCommand($"vault_list", (I) => VaultListCommand(I)));
-      CommandManager.CommandList.Add(new ChatCommand($"vault_open", (I) => VaultOpenCommand(I)));
-      CommandManager.CommandList.Add(new ChatCommand($"vault_str", (I) => VaultStructureCommand(I)));
+      CommandManager.CommandList.Add(new ChatCommand($"vault", (I) => VaultHelpCommand(I)));
+      //CommandManager.CommandList.Add(new ChatCommand($"vault_str", (I) => VaultStructureCommand(I)));
     }
 
     /*
@@ -31,18 +32,41 @@ namespace Empyrion_Vault
 
     private async Task VaultHelpCommand(MessageData data)
     {
-      if (debug)
+      if (Debug)
       {
         await Task.Run(() => Log($"VaultHelpCommand called by {data.SenderEntityId} with: {data.Text} "));
       }
-      
-      await VaultHelpDialog(data.SenderEntityId);
+
+      var command = data.Text.Split(' ');
+      if (command.Length == 1)
+      {
+        await VaultHelpDialog(data.SenderEntityId);
+        return;
+      }
+      switch (command[1])
+      {
+        case "new":
+          await VaultNewCommand(data);
+          break;
+        case "list":
+          await VaultListCommand(data);
+          break;
+        case "open":
+          await VaultOpenCommand(data);
+          break;
+        default:
+          await VaultHelpDialog(data.SenderEntityId);
+          break;
+      }
     }
 
     private async Task VaultHelpDialog(int playerId)
     {
       StringBuilder sb = new StringBuilder();
-      sb.AppendFormat("This is the help dialog.");
+      sb.Append("\nZucchini Vault:\n\n");
+      sb.Append("@vault new [p|f] name\n");
+      sb.Append("@vault list\n");
+      sb.Append("@vault open [p|f] name\n\n");
       await Helpers.SendFeedbackMessage(sb.ToString(), playerId);
     }
 
@@ -52,43 +76,74 @@ namespace Empyrion_Vault
 
     private async Task VaultNewCommand(MessageData data)
     {
-      if (debug)
+      if (Debug)
       {
-        await Task.Run(() => Log($"VaultNewCommand called by {data.SenderEntityId} with: {data.Text} "));
+        await Task.Run(() => Log($"VaultNewCommand called by {data.SenderEntityId} with: {data.Text}."));
       }
 
       var command = data.Text.Split(' ');
-      if (command.Length == 1)
+      if (command.Length < 4)
       {
-        await Helpers.SendFeedbackMessage("You need arguments.", data.SenderEntityId);
+        await VaultNewDialog(data.SenderEntityId);
         return;
       }
-
-      await Helpers.SendFeedbackMessage($"Creating vault name {command[1]}", data.SenderEntityId);
 
       var player = await Helpers.GetPlayerInfo(data.SenderEntityId);
-      var playerVaultPath = ModAPI.Application.GetPathFor(AppFolder.SaveGame) + @"\Mods\" + $"{ModName}" + @"\Players\" + $"{player.steamId}";
-      var factionVaultPath = ModAPI.Application.GetPathFor(AppFolder.SaveGame) + @"\Mods\" + $"{ModName}" + @"\Factions\" + $"{data.SenderFaction}";
-
-      if (File.Exists(playerVaultPath + $"\\{command[1]}.yaml"))
+      switch (command[2])
       {
-        await Helpers.SendFeedbackMessage("File already exists.", data.SenderEntityId);
-        return;
-      }
+        case "p":
+          Directory.CreateDirectory(PlayerVaultPath + $"{player.steamId}");
+          var vaultFilePath = PlayerVaultPath + $"{player.steamId}" + $"\\{command[3]}.yaml";
 
-      Directory.CreateDirectory(playerVaultPath);
-      Directory.CreateDirectory(factionVaultPath);
+          if (File.Exists(vaultFilePath))
+          {
+            await Helpers.SendFeedbackMessage($"A vault with the name {command[3]} already exists.", data.SenderEntityId);
+            return;
+          }
+          using (StreamWriter writer = File.CreateText(vaultFilePath))
+          {
+            var vault = new Vault()
+            {
+              Id = System.Guid.NewGuid(),
+              Name = command[3],
+              Items = new List<ItemStack>()
+            };
+            ConfigManager.SerializeYaml<Vault>(writer, vault);
+          }
+          break;
+        case "f":
+          Directory.CreateDirectory(FactionVaultPath + $"{data.SenderFaction}");
+          vaultFilePath = FactionVaultPath + $"{data.SenderFaction}" + $"\\{command[3]}.yaml";
 
-      using (StreamWriter writer = File.CreateText(playerVaultPath + $"\\{command[1]}.yaml"))
-      {
-        var vault = new Vault()
-        {
-          Id = System.Guid.NewGuid(),
-          Name = command[1],
-          Items = new List<ItemStack>()
-        };
-        ConfigManager.SerializeYaml<Vault>(writer, vault);
+          if (File.Exists(vaultFilePath))
+          {
+            await Helpers.SendFeedbackMessage($"A vault with the name {command[3]} already exists.", data.SenderEntityId);
+            return;
+          }
+          using (StreamWriter writer = File.CreateText(vaultFilePath))
+          {
+            var vault = new Vault()
+            {
+              Id = System.Guid.NewGuid(),
+              Name = command[3],
+              Items = new List<ItemStack>()
+            };
+            ConfigManager.SerializeYaml<Vault>(writer, vault);
+          }
+          break;
+        default:
+          await VaultNewDialog(data.SenderEntityId);
+          return;
       }
+    }
+
+    private async Task VaultNewDialog(int playerId)
+    {
+      StringBuilder sb = new StringBuilder();
+      sb.Append("\nZucchini Vault:\n\n");
+      sb.Append("@vault new [p|f] name\n");
+      sb.Append("Please review your arguments.\n");
+      await Helpers.SendFeedbackMessage(sb.ToString(), playerId);
     }
 
     /*
@@ -97,11 +152,11 @@ namespace Empyrion_Vault
 
     private async Task VaultListCommand(MessageData data)
     {
-      if (debug)
+      if (Debug)
       {
         await Task.Run(() => Log($"VaultListCommand called by {data.SenderEntityId} with: {data.Text} and Faction: {data.SenderFaction}"));
       }
-      
+
       var player = await Helpers.GetPlayerInfo(data.SenderEntityId);
       var playerVaultPath = ModAPI.Application.GetPathFor(AppFolder.SaveGame) + @"\Mods\" + $"{ModName}" + @"\Players\" + $"{player.steamId}";
       var factionVaultPath = ModAPI.Application.GetPathFor(AppFolder.SaveGame) + @"\Mods\" + $"{ModName}" + @"\Factions\" + $"{data.SenderFaction}";
@@ -146,7 +201,7 @@ namespace Empyrion_Vault
       }
 
       StringBuilder message = new StringBuilder();
-      message.AppendFormat("Hello {0}, you have {1} personal and {2} faction vault(s)\n", data.SenderEntityId, playerVaults.Count, factionVaults.Count);
+      message.AppendFormat("\nHello {0}, you have {1} personal and {2} faction vault(s)\n\n", data.SenderEntityId, playerVaults.Count, factionVaults.Count);
 
       foreach (var vault in playerVaults)
       {
@@ -162,49 +217,91 @@ namespace Empyrion_Vault
     private async Task VaultOpenCommand(MessageData data)
     {
       var command = data.Text.Split(' ');
-      if (command.Length == 1)
+      if (command.Length < 4)
       {
         await Helpers.SendFeedbackMessage("You need arguments.", data.SenderEntityId);
         return;
       }
 
       var player = await Helpers.GetPlayerInfo(data.SenderEntityId);
-      var playerVaultPath = ModAPI.Application.GetPathFor(AppFolder.SaveGame) + @"\Mods\" + $"{ModName}" + @"\Players\" + $"{player.steamId}";
-      try
-      {
-        var vault = new Vault();
-        using (StreamReader reader = File.OpenText(playerVaultPath + $"\\{command[1]}.yaml"))
-        {
-          vault = ConfigManager.DeserializeYaml<Vault>(reader);
-        }
-        var itemExchange = new ItemExchangeInfo()
-        {
-          id = data.SenderEntityId,
-          buttonText = "Done",
-          desc = $"Name: {vault.Name}",
-          title = "Zucchini Vault",
-          items = vault.Items.ToArray()
-        };
-        vault.Items.Clear();
-        using (StreamWriter writer = File.CreateText(playerVaultPath + $"\\{command[1]}.yaml"))
-        {
-          ConfigManager.SerializeYaml<Vault>(writer, vault);
-        }
 
-        var result = (ItemExchangeInfo) await RequestManager.SendGameRequest(CmdId.Request_Player_ItemExchange, itemExchange);
-        vault.Items = new List<ItemStack>(result.items);
-        using (StreamWriter writer = File.CreateText(playerVaultPath + $"\\{command[1]}.yaml"))
-        {
-          ConfigManager.SerializeYaml<Vault>(writer, vault);
-        }
-        await Helpers.SendFeedbackMessage("Vault contents should have been successfully saved.", data.SenderEntityId);
-      }
-      catch
+      switch (command[2])
       {
-        throw;
+        case "p":
+          var vaultFilePath = PlayerVaultPath + $"{player.steamId}" + $"\\{command[3]}.yaml";
+          if (!File.Exists(vaultFilePath))
+          {
+            await Helpers.SendFeedbackMessage($"Could not find a vault named {command[3]}.", data.SenderEntityId);
+            return;
+          }
+
+          var vault = new Vault();
+          using (StreamReader reader = File.OpenText(vaultFilePath))
+          {
+            vault = ConfigManager.DeserializeYaml<Vault>(reader);
+          }
+          var itemExchange = new ItemExchangeInfo()
+          {
+            id = data.SenderEntityId,
+            buttonText = "Done",
+            desc = $"Name: {vault.Name}",
+            title = "Zucchini Vault",
+            items = vault.Items.ToArray()
+          };
+          vault.Items.Clear();
+          using (StreamWriter writer = File.CreateText(vaultFilePath))
+          {
+            ConfigManager.SerializeYaml<Vault>(writer, vault);
+          }
+          var result = (ItemExchangeInfo)await RequestManager.SendGameRequest(CmdId.Request_Player_ItemExchange, itemExchange);
+          vault.Items = new List<ItemStack>(result.items);
+          using (StreamWriter writer = File.CreateText(vaultFilePath))
+          {
+            ConfigManager.SerializeYaml<Vault>(writer, vault);
+          }
+          await Helpers.SendFeedbackMessage("Vault contents should have been successfully saved.", data.SenderEntityId);
+          break;
+        case "f":
+          vaultFilePath = FactionVaultPath + $"{data.SenderFaction}" + $"\\{command[3]}.yaml";
+          if (!File.Exists(vaultFilePath))
+          {
+            await Helpers.SendFeedbackMessage($"Could not find a vault named {command[3]}.", data.SenderEntityId);
+            return;
+          }
+
+          vault = new Vault();
+          using (StreamReader reader = File.OpenText(vaultFilePath))
+          {
+            vault = ConfigManager.DeserializeYaml<Vault>(reader);
+          }
+          itemExchange = new ItemExchangeInfo()
+          {
+            id = data.SenderEntityId,
+            buttonText = "Done",
+            desc = $"Name: {vault.Name}",
+            title = "Zucchini Vault",
+            items = vault.Items.ToArray()
+          };
+          vault.Items.Clear();
+          using (StreamWriter writer = File.CreateText(vaultFilePath))
+          {
+            ConfigManager.SerializeYaml<Vault>(writer, vault);
+          }
+          result = (ItemExchangeInfo)await RequestManager.SendGameRequest(CmdId.Request_Player_ItemExchange, itemExchange);
+          vault.Items = new List<ItemStack>(result.items);
+          using (StreamWriter writer = File.CreateText(vaultFilePath))
+          {
+            ConfigManager.SerializeYaml<Vault>(writer, vault);
+          }
+          await Helpers.SendFeedbackMessage("Vault contents should have been successfully saved.", data.SenderEntityId);
+          break;
+        default:
+          await VaultNewDialog(data.SenderEntityId);
+          return;
       }
     }
 
+    /*
     private async Task VaultStructureCommand(MessageData data)
     {
 
@@ -219,6 +316,7 @@ namespace Empyrion_Vault
 
       // var player = await Helpers.GetPlayerInfo(data.SenderEntityId);
       var structure = (IdStructureBlockInfo)await RequestManager.SendGameRequest(CmdId.Request_Structure_BlockStatistics, new Id() { id = int.Parse(command[1]) });
+      await RequestManager.SendGameRequest(CmdId.Request_Entity_Destroy, new Id() { id = int.Parse(command[1]) });
 
       List<ItemStack> strBlocks = new List<ItemStack>();
       StringBuilder sb = new StringBuilder();
@@ -232,13 +330,18 @@ namespace Empyrion_Vault
         });
 
         sb.AppendFormat("Block ID: {0} Quantity: {1}\n", block, structure.blockStatistics[block]);
-        
-        //Vaults[data.SenderEntityId] = new List<ItemStack>(strBlocks);
       }
 
-      await RequestManager.SendGameRequest(CmdId.Request_Entity_Destroy, new Id() { id = int.Parse(command[1]) });
+      var playerInventory = (Inventory)await RequestManager.SendGameRequest(CmdId.Request_Player_GetAndRemoveInventory, new Id() { id = data.SenderEntityId });
+      foreach (var i in playerInventory.bag)
+      {
+        strBlocks.Add(i);
+      }
+      playerInventory.bag = strBlocks.ToArray();
 
+      await RequestManager.SendGameRequest(CmdId.Request_Player_SetInventory, playerInventory);
       await Helpers.SendFeedbackMessage(sb.ToString(), data.SenderEntityId);
     }
+    */
   }
 }
