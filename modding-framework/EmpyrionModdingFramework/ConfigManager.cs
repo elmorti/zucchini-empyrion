@@ -5,7 +5,7 @@ using YamlDotNet.Serialization;
 
 namespace EmpyrionModdingFramework
 {
-  public class ConfigManager
+  public class ConfigManager // Is this class static? Should be?
   {
     public string FilePath;
     public FrameworkConfig ModConfig { get; set; }
