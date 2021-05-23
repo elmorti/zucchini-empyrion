@@ -22,6 +22,7 @@ namespace Empyrion_Vault
       CommandManager.CommandList.Add(new ChatCommand($"vault_new", (I) => VaultNewCommand(I)));
       CommandManager.CommandList.Add(new ChatCommand($"vault_list", (I) => VaultListCommand(I)));
       CommandManager.CommandList.Add(new ChatCommand($"vault_open", (I) => VaultOpenCommand(I)));
+      CommandManager.CommandList.Add(new ChatCommand($"vault_str", (I) => VaultStructureCommand(I)));
     }
 
     /*
@@ -202,6 +203,42 @@ namespace Empyrion_Vault
       {
         throw;
       }
+    }
+
+    private async Task VaultStructureCommand(MessageData data)
+    {
+
+      // TODO IMPORTANT CHECK IF THE PLAYER IS OWNER OF THE STRUCTURE!!
+
+      var command = data.Text.Split(' ');
+      if (command.Length == 1)
+      {
+        await Helpers.SendFeedbackMessage("You need arguments.", data.SenderEntityId);
+        return;
+      }
+
+      // var player = await Helpers.GetPlayerInfo(data.SenderEntityId);
+      var structure = (IdStructureBlockInfo)await RequestManager.SendGameRequest(CmdId.Request_Structure_BlockStatistics, new Id() { id = int.Parse(command[1]) });
+
+      List<ItemStack> strBlocks = new List<ItemStack>();
+      StringBuilder sb = new StringBuilder();
+      sb.AppendFormat("\nStructure: {0}\n", structure.id);
+      foreach (var block in structure.blockStatistics.Keys)
+      {
+        strBlocks.Add(new ItemStack()
+        {
+          id = block,
+          count = structure.blockStatistics[block],
+        });
+
+        sb.AppendFormat("Block ID: {0} Quantity: {1}\n", block, structure.blockStatistics[block]);
+        
+        //Vaults[data.SenderEntityId] = new List<ItemStack>(strBlocks);
+      }
+
+      await RequestManager.SendGameRequest(CmdId.Request_Entity_Destroy, new Id() { id = int.Parse(command[1]) });
+
+      await Helpers.SendFeedbackMessage(sb.ToString(), data.SenderEntityId);
     }
   }
 }
