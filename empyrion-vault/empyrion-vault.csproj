@@ -39,11 +39,11 @@
       <HintPath>..\modding-framework\EmpyrionModdingFramework\bin\Debug\ILMerge\EmpyrionModdingFramework.dll</HintPath>
     </Reference>
     <Reference Include="Mif">
-      <HintPath>..\eleon\Mif.dll</HintPath>
+      <HintPath>..\modding-framework\Dependencies\empyrion-eleon\Mif.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="ModApi">
-      <HintPath>..\eleon\ModApi.dll</HintPath>
+      <HintPath>..\modding-framework\Dependencies\empyrion-eleon\ModApi.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -57,7 +57,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Vault.cs" />
-    <Compile Include="Config.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
