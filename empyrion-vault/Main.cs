@@ -21,10 +21,10 @@ namespace Empyrion_Vault
       Debug = true;
       PlayerVaultPath = ModAPI.Application.GetPathFor(AppFolder.SaveGame) + @"\Mods\" + $"{ModName}" + @"\Players\";
       FactionVaultPath = ModAPI.Application.GetPathFor(AppFolder.SaveGame) + @"\Mods\" + $"{ModName}" + @"\Factions\";
-
       CommandManager.CommandList.Add(new ChatCommand($"vault", (I) => VaultHelpCommand(I)));
-      //CommandManager.CommandList.Add(new ChatCommand($"vault_str", (I) => VaultStructureCommand(I)));
     }
+
+    // TODO: Needs to implement safe file sharing mechanism (i.e. for Faction Vaults)
 
     /*
      * Vault Help
@@ -194,9 +194,8 @@ namespace Empyrion_Vault
         }
       }
 
-      // TODO: This should be checking both faction and player vaults.
-      if (playerVaults.Count == 0) {
-        await Helpers.SendFeedbackMessage("No personal vaults for you.", data.SenderEntityId);
+      if (playerVaults.Count == 0 && factionVaults.Count == 0) {
+        await Helpers.SendFeedbackMessage("No vaults found.", data.SenderEntityId);
         return;
       }
 
@@ -300,48 +299,5 @@ namespace Empyrion_Vault
           return;
       }
     }
-
-    /*
-    private async Task VaultStructureCommand(MessageData data)
-    {
-
-      // TODO IMPORTANT CHECK IF THE PLAYER IS OWNER OF THE STRUCTURE!!
-
-      var command = data.Text.Split(' ');
-      if (command.Length == 1)
-      {
-        await Helpers.SendFeedbackMessage("You need arguments.", data.SenderEntityId);
-        return;
-      }
-
-      // var player = await Helpers.GetPlayerInfo(data.SenderEntityId);
-      var structure = (IdStructureBlockInfo)await RequestManager.SendGameRequest(CmdId.Request_Structure_BlockStatistics, new Id() { id = int.Parse(command[1]) });
-      await RequestManager.SendGameRequest(CmdId.Request_Entity_Destroy, new Id() { id = int.Parse(command[1]) });
-
-      List<ItemStack> strBlocks = new List<ItemStack>();
-      StringBuilder sb = new StringBuilder();
-      sb.AppendFormat("\nStructure: {0}\n", structure.id);
-      foreach (var block in structure.blockStatistics.Keys)
-      {
-        strBlocks.Add(new ItemStack()
-        {
-          id = block,
-          count = structure.blockStatistics[block],
-        });
-
-        sb.AppendFormat("Block ID: {0} Quantity: {1}\n", block, structure.blockStatistics[block]);
-      }
-
-      var playerInventory = (Inventory)await RequestManager.SendGameRequest(CmdId.Request_Player_GetAndRemoveInventory, new Id() { id = data.SenderEntityId });
-      foreach (var i in playerInventory.bag)
-      {
-        strBlocks.Add(i);
-      }
-      playerInventory.bag = strBlocks.ToArray();
-
-      await RequestManager.SendGameRequest(CmdId.Request_Player_SetInventory, playerInventory);
-      await Helpers.SendFeedbackMessage(sb.ToString(), data.SenderEntityId);
-    }
-    */
   }
 }
